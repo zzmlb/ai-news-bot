@@ -1,0 +1,23 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+logs/
+
+# 依赖目录 (根据项目类型按需启用)
+# node_modules/
+# __pycache__/
+# venv/
