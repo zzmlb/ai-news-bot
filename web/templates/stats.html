@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}AI 资讯 - 统计仪表盘{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+            <h1 class="text-2xl font-bold text-white">统计仪表盘</h1>
+            <p class="text-gray-400 text-sm mt-1">数据可视化概览</p>
+        </div>
+        <!-- 时间范围切换 -->
+        <div class="flex gap-2">
+            {% for d, label in [(7, '7天'), (30, '30天'), (90, '90天')] %}
+            <a href="/stats?days={{ d }}"
+               class="px-3 py-1.5 text-sm rounded-lg transition
+                      {% if days == d %}bg-blue-600 text-white{% else %}bg-dark-800 text-gray-300 border border-gray-700 hover:border-gray-500{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 第一行：趋势折线图 -->
+    <section class="bg-dark-800 border border-gray-700 rounded-xl p-5">
+        <h2 class="text-lg font-semibold text-white mb-4">每日资讯趋势</h2>
+        <div class="relative" style="height: 300px;">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </section>
+
+    <!-- 第二行：分类 + 重要性 + 来源 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 分类分布（环形图） -->
+        <section class="bg-dark-800 border border-gray-700 rounded-xl p-5">
+            <h2 class="text-lg font-semibold text-white mb-4">分类分布</h2>
+            <div class="relative" style="height: 260px;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </section>
+
+        <!-- 重要性分布（环形图） -->
+        <section class="bg-dark-800 border border-gray-700 rounded-xl p-5">
+            <h2 class="text-lg font-semibold text-white mb-4">重要性分布</h2>
+            <div class="relative" style="height: 260px;">
+                <canvas id="importanceChart"></canvas>
+            </div>
+        </section>
+
+        <!-- 来源 Top 排行（横向柱状图） -->
+        <section class="bg-dark-800 border border-gray-700 rounded-xl p-5">
+            <h2 class="text-lg font-semibold text-white mb-4">来源 Top 15</h2>
+            <div class="relative" style="height: 260px;">
+                <canvas id="sourceChart"></canvas>
+            </div>
+        </section>
+    </div>
+
+    <!-- 第三行：词云 -->
+    <section class="bg-dark-800 border border-gray-700 rounded-xl p-5">
+        <h2 class="text-lg font-semibold text-white mb-4">热门关键词</h2>
+        <div id="wordcloud" style="width: 100%; height: 400px;"></div>
+    </section>
+</div>
+
+<!-- Chart.js + wordcloud2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/wordcloud@1/src/wordcloud2.js"></script>
+
+<script>
+// 通用 Chart.js 配色
+Chart.defaults.color = '#9ca3af';
+Chart.defaults.borderColor = 'rgba(75, 85, 99, 0.3)';
+
+const PALETTE = [
+    '#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b',
+    '#ef4444', '#ec4899', '#6366f1', '#14b8a6', '#f97316',
+    '#84cc16', '#a855f7'
+];
+
+// === 趋势折线图 ===
+const trendData = {{ trend | tojson }};
+const trendLabels = Object.keys(trendData).map(d => d.slice(5)); // MM-DD
+const trendValues = Object.values(trendData);
+
+new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+        labels: trendLabels,
+        datasets: [{
+            label: '文章数',
+            data: trendValues,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointRadius: trendLabels.length > 30 ? 0 : 3,
+            pointHoverRadius: 5,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: {
+                ticks: { maxTicksLimit: 15, font: { size: 11 } },
+                grid: { display: false },
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { precision: 0 },
+            }
+        },
+        interaction: { intersect: false, mode: 'index' },
+    }
+});
+
+// === 分类环形图 ===
+const catData = {{ categories | tojson }};
+const catLabels = {{ category_labels | tojson }};
+new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(catData).map(k => catLabels[k] || k),
+        datasets: [{
+            data: Object.values(catData),
+            backgroundColor: PALETTE.slice(0, Object.keys(catData).length),
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } }
+            }
+        },
+        cutout: '55%',
+    }
+});
+
+// === 重要性环形图 ===
+const impData = {{ importance | tojson }};
+const impLabels = { 'major': '重大', 'normal': '普通' };
+const impColors = { 'major': '#f59e0b', 'normal': '#3b82f6' };
+new Chart(document.getElementById('importanceChart'), {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(impData).map(k => impLabels[k] || k),
+        datasets: [{
+            data: Object.values(impData),
+            backgroundColor: Object.keys(impData).map(k => impColors[k] || '#6b7280'),
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } }
+            }
+        },
+        cutout: '55%',
+    }
+});
+
+// === 来源柱状图 ===
+const srcData = {{ sources | tojson }};
+new Chart(document.getElementById('sourceChart'), {
+    type: 'bar',
+    data: {
+        labels: Object.keys(srcData),
+        datasets: [{
+            data: Object.values(srcData),
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: '#3b82f6',
+            borderWidth: 1,
+            borderRadius: 3,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { beginAtZero: true, ticks: { precision: 0 } },
+            y: { ticks: { font: { size: 10 } } },
+        }
+    }
+});
+
+// === 词云 ===
+const wordFreq = {{ word_freq | tojson }};
+const wcEl = document.getElementById('wordcloud');
+
+function renderCloud() {
+    const w = wcEl.offsetWidth;
+    const h = wcEl.offsetHeight;
+    if (w === 0 || h === 0) return;
+
+    // 根据词频动态计算字号范围
+    const maxFreq = wordFreq.length > 0 ? wordFreq[0][1] : 1;
+    const list = wordFreq.map(function(item) {
+        // 字号范围 14~64，按频率比例缩放
+        var size = Math.max(14, Math.round((item[1] / maxFreq) * 64));
+        return [item[0], size];
+    });
+
+    WordCloud(wcEl, {
+        list: list,
+        gridSize: 8,
+        weightFactor: 1,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Noto Sans SC", sans-serif',
+        color: function(word, weight) {
+            return PALETTE[Math.floor(Math.random() * PALETTE.length)];
+        },
+        backgroundColor: 'transparent',
+        rotateRatio: 0.2,
+        rotationSteps: 2,
+        shuffle: true,
+        drawOutOfBound: false,
+    });
+}
+
+// 确保容器可见后再渲染
+if (document.readyState === 'complete') {
+    renderCloud();
+} else {
+    window.addEventListener('load', renderCloud);
+}
+</script>
+{% endblock %}

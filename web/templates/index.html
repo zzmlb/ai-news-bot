@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}AI 资讯 - 今日概览{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- 今日概览标题 -->
+    <div>
+        <h1 class="text-2xl font-bold text-white">今日概览</h1>
+        <p class="text-gray-400 text-sm mt-1">{{ stats.total }} 条资讯</p>
+    </div>
+
+    <!-- 分类统计卡片 -->
+    {% if stats.categories %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {% for cat, count in stats.categories.items() %}
+        <a href="/articles?category={{ cat }}"
+           class="bg-dark-800 border border-gray-700 rounded-xl p-4 hover:border-blue-500 transition group">
+            <div class="text-2xl font-bold text-white group-hover:text-blue-400 transition">{{ count }}</div>
+            <div class="text-xs text-gray-400 mt-1">{{ category_labels.get(cat, cat) }}</div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 重大新闻 -->
+    {% if stats.major %}
+    <section>
+        <h2 class="text-lg font-semibold text-orange-400 mb-4 flex items-center">
+            <span class="mr-2">&#128293;</span> 重大资讯
+        </h2>
+        <div class="space-y-3">
+            {% for a in stats.major %}
+            <a href="{{ a.url }}" target="_blank" rel="noopener"
+               class="block bg-dark-800 border border-orange-900/40 rounded-xl p-4 hover:border-orange-500/60 transition">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-white font-medium truncate">{{ a.title }}</h3>
+                        {% if a.summary_zh %}
+                        <p class="text-gray-400 text-sm mt-1 line-clamp-2">{{ a.summary_zh }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="flex-shrink-0 flex flex-col items-end gap-1">
+                        {% if a.category %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-blue-900/50 text-blue-300">
+                            {{ category_labels.get(a.category, a.category) }}
+                        </span>
+                        {% endif %}
+                        <span class="text-xs text-gray-500">{{ a.source }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 最新资讯 -->
+    {% if stats.latest %}
+    <section>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-white">最新资讯</h2>
+            <a href="/articles" class="text-sm text-blue-400 hover:text-blue-300 transition">查看全部 &rarr;</a>
+        </div>
+        <div class="space-y-2">
+            {% for a in stats.latest %}
+            <a href="{{ a.url }}" target="_blank" rel="noopener"
+               class="block bg-dark-800 border border-gray-700/50 rounded-lg p-3 hover:border-gray-600 transition">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex-1 min-w-0 flex items-center gap-2">
+                        {% if a.importance == 'major' %}
+                        <span class="flex-shrink-0 text-orange-400 text-sm">&#128293;</span>
+                        {% endif %}
+                        <h3 class="text-gray-200 text-sm truncate">{{ a.title }}</h3>
+                    </div>
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        {% if a.category %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-700 text-gray-300">
+                            {{ category_labels.get(a.category, a.category) }}
+                        </span>
+                        {% endif %}
+                        <span class="text-xs text-gray-500">{{ a.source }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 空状态 -->
+    {% if stats.total == 0 %}
+    <div class="text-center py-20">
+        <div class="text-4xl mb-4">&#128240;</div>
+        <p class="text-gray-400">今日暂无资讯</p>
+        <p class="text-gray-500 text-sm mt-1">系统会定时抓取最新 AI 资讯</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,23 +1,23 @@
-# 系统文件
-.DS_Store
-Thumbs.db
+# 敏感配置（使用 .example 模板）
+config.yaml
+agent/.env
 
-# 编辑器
-.vscode/
-.idea/
+# 运行时数据
+data/news.db
+data/cron.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Chainlit
+agent/.chainlit/
+agent/.files/
+
+# 编辑器临时文件
 *.swp
 *.swo
+*~
 
-# 环境变量
-.env
-.env.local
-.env.*.local
-
-# 日志
-*.log
-logs/
-
-# 依赖目录 (根据项目类型按需启用)
-# node_modules/
-# __pycache__/
-# venv/
+# 杂项
+.gitkeep

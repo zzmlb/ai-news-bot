@@ -1,0 +1,20 @@
+# 千问模型配置
+qwen:
+    api_key: "your-qwen-api-key"
+    model: "qwen-turbo"
+
+# 推送渠道配置
+webhook:
+    dingtalk:
+        enabled: true
+        url: "https://oapi.dingtalk.com/robot/send?access_token=your-dingtalk-token"
+        keyword: "AInew"
+
+    feishu:
+        enabled: false
+        url: ""
+        keyword: ""
+
+# 抓取配置
+schedule:
+    interval_hours: 3

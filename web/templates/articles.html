@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}AI 资讯 - 全部资讯{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 标题 + 统计 -->
+    <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+            <h1 class="text-2xl font-bold text-white">全部资讯</h1>
+            <p class="text-gray-400 text-sm mt-1">共 {{ total }} 条</p>
+        </div>
+    </div>
+
+    <!-- 筛选栏 -->
+    <form method="get" action="/articles" class="space-y-3">
+        <!-- 分类按钮组 -->
+        <div class="flex flex-wrap gap-2">
+            <a href="/articles?search={{ search }}&date_from={{ date_from }}&date_to={{ date_to }}"
+               class="px-3 py-1.5 text-sm rounded-lg transition
+                      {% if not category %}bg-blue-600 text-white{% else %}bg-dark-800 text-gray-300 border border-gray-700 hover:border-gray-500{% endif %}">
+                全部
+            </a>
+            {% for cat_key, cat_name in category_labels.items() %}
+            <a href="/articles?category={{ cat_key }}&search={{ search }}&date_from={{ date_from }}&date_to={{ date_to }}"
+               class="px-3 py-1.5 text-sm rounded-lg transition
+                      {% if category == cat_key %}bg-blue-600 text-white{% else %}bg-dark-800 text-gray-300 border border-gray-700 hover:border-gray-500{% endif %}">
+                {{ cat_name }}
+            </a>
+            {% endfor %}
+        </div>
+        <!-- 搜索 + 日期 -->
+        <div class="flex flex-wrap gap-2">
+            <input type="text" name="search" value="{{ search }}" placeholder="搜索标题或摘要..."
+                   class="flex-1 min-w-[200px] px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-sm text-gray-200
+                          placeholder-gray-500 focus:outline-none focus:border-blue-500 transition">
+            <input type="date" name="date_from" value="{{ date_from }}"
+                   class="px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-sm text-gray-200
+                          focus:outline-none focus:border-blue-500 transition">
+            <input type="date" name="date_to" value="{{ date_to }}"
+                   class="px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-sm text-gray-200
+                          focus:outline-none focus:border-blue-500 transition">
+            <input type="hidden" name="category" value="{{ category }}">
+            <button type="submit"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition">
+                搜索
+            </button>
+        </div>
+    </form>
+
+    <!-- 文章列表 -->
+    <div class="space-y-3">
+        {% for a in articles %}
+        <a href="{{ a.url }}" target="_blank" rel="noopener"
+           class="block bg-dark-800 border border-gray-700/50 rounded-xl p-4 hover:border-gray-600 transition group">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        {% if a.importance == 'major' %}
+                        <span class="text-orange-400">&#128293;</span>
+                        {% endif %}
+                        <h3 class="text-white font-medium group-hover:text-blue-400 transition truncate">
+                            {{ a.title }}
+                        </h3>
+                    </div>
+                    {% if a.summary_zh %}
+                    <p class="text-gray-400 text-sm mt-2 line-clamp-2">{{ a.summary_zh }}</p>
+                    {% endif %}
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-xs text-gray-500">{{ a.source }}</span>
+                        {% if a.published_time %}
+                        <span class="text-xs text-gray-600">{{ a.published_time[:16] }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    {% if a.category %}
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-blue-900/50 text-blue-300">
+                        {{ category_labels.get(a.category, a.category) }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% else %}
+        <div class="text-center py-16">
+            <div class="text-4xl mb-4">&#128270;</div>
+            <p class="text-gray-400">未找到匹配的资讯</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 分页 -->
+    {% if total_pages > 1 %}
+    <nav class="flex items-center justify-center gap-1 pt-4">
+        {% if page > 1 %}
+        <a href="/articles?page={{ page - 1 }}&category={{ category }}&search={{ search }}&date_from={{ date_from }}&date_to={{ date_to }}"
+           class="px-3 py-2 text-sm bg-dark-800 border border-gray-700 rounded-lg text-gray-300 hover:border-gray-500 transition">
+            &laquo; 上一页
+        </a>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg">{{ p }}</span>
+            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <a href="/articles?page={{ p }}&category={{ category }}&search={{ search }}&date_from={{ date_from }}&date_to={{ date_to }}"
+               class="px-3 py-2 text-sm bg-dark-800 border border-gray-700 rounded-lg text-gray-300 hover:border-gray-500 transition">
+                {{ p }}
+            </a>
+            {% elif p == page - 3 or p == page + 3 %}
+            <span class="px-2 py-2 text-gray-500">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a href="/articles?page={{ page + 1 }}&category={{ category }}&search={{ search }}&date_from={{ date_from }}&date_to={{ date_to }}"
+           class="px-3 py-2 text-sm bg-dark-800 border border-gray-700 rounded-lg text-gray-300 hover:border-gray-500 transition">
+            下一页 &raquo;
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

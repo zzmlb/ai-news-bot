@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI 资讯{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 800: '#1a1a2e', 900: '#0f0f23', 700: '#252547' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; }
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f0f23; }
+        ::-webkit-scrollbar-thumb { background: #4a4a6a; border-radius: 3px; }
+        /* 聊天浮窗动画 */
+        #chat-panel { transition: transform 0.3s ease, opacity 0.3s ease; }
+        #chat-panel.chat-closed { transform: translateY(20px); opacity: 0; pointer-events: none; display: none; }
+    </style>
+</head>
+<body class="bg-dark-900 text-gray-200 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-dark-800 border-b border-gray-700 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14">
+                <a href="/" class="flex items-center space-x-2">
+                    <span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                        AI 资讯
+                    </span>
+                </a>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-300 hover:text-white text-sm transition">首页</a>
+                    <a href="/stats" class="text-gray-300 hover:text-white text-sm transition">统计</a>
+                    <a href="/articles" class="text-gray-300 hover:text-white text-sm transition">全部资讯</a>
+                    <a href="/webhooks" class="text-gray-300 hover:text-white text-sm transition">推送管理</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="border-t border-gray-800 mt-12 py-6 text-center text-gray-500 text-xs">
+        AI News Bot &mdash; AI 资讯自动抓取与推送系统
+    </footer>
+
+    <!-- AI 助手浮窗 -->
+    <button id="chat-btn" onclick="toggleChat()"
+        class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600
+               shadow-lg hover:shadow-xl flex items-center justify-center transition-transform hover:scale-110">
+        <svg id="chat-icon-open" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <svg id="chat-icon-close" class="w-6 h-6 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+    </button>
+
+    <div id="chat-panel" class="chat-closed fixed bottom-24 right-6 z-50
+                w-[400px] h-[600px] max-sm:w-full max-sm:h-full max-sm:bottom-0 max-sm:right-0 max-sm:rounded-none
+                bg-dark-800 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between px-4 py-3 bg-dark-700 border-b border-gray-700">
+            <span class="text-sm font-medium text-gray-200">AI 助手</span>
+            <div class="flex items-center gap-2">
+                <a id="chat-newwin" href="#" target="_blank" rel="noopener"
+                   class="text-gray-400 hover:text-blue-400 transition" title="新窗口打开">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                </a>
+                <button onclick="toggleChat()" class="text-gray-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- 加载提示 -->
+        <div id="chat-loading" class="flex-1 flex items-center justify-center">
+            <div class="text-center">
+                <div class="inline-block w-8 h-8 border-2 border-gray-600 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                <p class="text-gray-400 text-sm">正在连接 AI 助手...</p>
+            </div>
+        </div>
+        <iframe id="chat-iframe" class="flex-1 w-full hidden" style="border:none;"
+                allow="clipboard-read; clipboard-write"></iframe>
+    </div>
+
+    <script>
+        let chatOpen = false;
+        let chatLoaded = false;
+        function getChatUrl() {
+            return window.location.protocol + '//' + window.location.hostname + ':8000';
+        }
+        function toggleChat() {
+            chatOpen = !chatOpen;
+            const panel = document.getElementById('chat-panel');
+            const iconOpen = document.getElementById('chat-icon-open');
+            const iconClose = document.getElementById('chat-icon-close');
+            if (chatOpen) {
+                panel.classList.remove('chat-closed');
+                iconOpen.classList.add('hidden');
+                iconClose.classList.remove('hidden');
+                if (!chatLoaded) {
+                    const chatUrl = getChatUrl();
+                    const iframe = document.getElementById('chat-iframe');
+                    const loading = document.getElementById('chat-loading');
+                    document.getElementById('chat-newwin').href = chatUrl;
+                    iframe.onload = function() {
+                        loading.classList.add('hidden');
+                        iframe.classList.remove('hidden');
+                    };
+                    // 超时处理：5 秒后如果还没加载成功，显示提示
+                    setTimeout(function() {
+                        if (!iframe.classList.contains('hidden')) return;
+                        loading.innerHTML = '<div class="text-center px-4">' +
+                            '<p class="text-gray-400 text-sm mb-3">AI 助手加载较慢或无法连接</p>' +
+                            '<a href="' + chatUrl + '" target="_blank" rel="noopener" ' +
+                            'class="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition">' +
+                            '在新窗口打开</a></div>';
+                    }, 5000);
+                    iframe.src = chatUrl;
+                    chatLoaded = true;
+                }
+            } else {
+                panel.classList.add('chat-closed');
+                iconOpen.classList.remove('hidden');
+                iconClose.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
