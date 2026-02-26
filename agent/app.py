@@ -143,60 +143,12 @@ async def _handle_event(event: dict, reply: cl.Message, active_steps: dict):
     if evt_type == "assistant":
         contents = event.get("message", {}).get("content", [])
         for block in contents:
-            block_type = block.get("type", "")
-
-            if block_type == "thinking":
-                # 思考过程 → 显示为可折叠的 Step
-                thinking_text = block.get("thinking", "")
-                if thinking_text:
-                    async with cl.Step(name="思考中", type="llm") as step:
-                        step.output = thinking_text
-
-            elif block_type == "tool_use":
-                # 工具调用 → 创建 Step 并显示输入
-                tool_name = block.get("name", "未知工具")
-                tool_id = block.get("id", "")
-                tool_input = block.get("input", {})
-
-                display_name = TOOL_NAMES.get(tool_name, tool_name)
-
-                # 构建可读的输入描述
-                input_desc = _format_tool_input(tool_name, tool_input)
-
-                step = cl.Step(name=f"🔧 {display_name}", type="tool")
-                step.input = input_desc
-                await step.send()
-                active_steps[tool_id] = step
-
-            elif block_type == "text":
-                # 最终文本回复 → 流式输出到主消息
+            if block.get("type") == "text":
                 text = block.get("text", "")
                 if text:
                     await reply.stream_token(text)
 
-    elif evt_type == "user":
-        # 工具执行结果
-        contents = event.get("message", {}).get("content", [])
-        # 也检查顶层 tool_use_result
-        tool_result_str = event.get("tool_use_result", "")
-
-        for block in contents:
-            if block.get("type") == "tool_result":
-                tool_id = block.get("tool_use_id", "")
-                result_content = block.get("content", "")
-                is_error = block.get("is_error", False)
-
-                if tool_id in active_steps:
-                    step = active_steps.pop(tool_id)
-                    if is_error:
-                        step.output = f"❌ 错误:\n```\n{_truncate(str(result_content))}\n```"
-                    else:
-                        step.output = f"```\n{_truncate(str(result_content))}\n```"
-                    await step.update()
-
     elif evt_type == "result":
-        # 最终结果（如果前面没输出文本，用这里的 result）
-        # 通常 text block 已经处理了，这里做兜底
         pass
 
 

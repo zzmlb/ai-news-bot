@@ -126,15 +126,16 @@
                         loading.classList.add('hidden');
                         iframe.classList.remove('hidden');
                     };
-                    // 超时处理：5 秒后如果还没加载成功，显示提示
+                    // 超时处理：15 秒后如果还没加载成功，显示提示（Chainlit 前端约 4MB，加载较慢属正常）
                     setTimeout(function() {
                         if (!iframe.classList.contains('hidden')) return;
                         loading.innerHTML = '<div class="text-center px-4">' +
-                            '<p class="text-gray-400 text-sm mb-3">AI 助手加载较慢或无法连接</p>' +
+                            '<p class="text-gray-400 text-sm mb-3">AI 助手首次加载约需 10-20 秒</p>' +
+                            '<p class="text-gray-500 text-xs mb-4">如长时间无响应，可在新窗口打开</p>' +
                             '<a href="' + chatUrl + '" target="_blank" rel="noopener" ' +
                             'class="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition">' +
                             '在新窗口打开</a></div>';
-                    }, 5000);
+                    }, 15000);
                     iframe.src = chatUrl;
                     chatLoaded = true;
                 }
