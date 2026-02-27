@@ -1,0 +1,20 @@
+services:
+  ai-news-bot:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ai-news-bot
+    restart: unless-stopped
+    volumes:
+      # 配置文件（只读挂载）
+      - ./config.yaml:/app/config.yaml:ro
+      - ./agent/.env:/app/agent/.env:ro
+      # 数据持久化（读写）
+      - ./data:/app/data
+    ports:
+      # 默认用 15001/18000 避免和宿主机现有服务冲突
+      # 如果宿主机没有跑其他服务，可改为 5001:5001 和 8000:8000
+      - "${FLASK_PORT:-15001}:5001"
+      - "${CHAINLIT_PORT:-18000}:8000"
+    environment:
+      - TZ=Asia/Shanghai

@@ -1,0 +1,2 @@
+# 每3小时执行一次资讯抓取推送
+0 */3 * * * cd /app && python3 main.py >> /app/data/cron.log 2>&1
