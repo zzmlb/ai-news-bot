@@ -6,6 +6,7 @@ agent/.env
 docker/config.yaml
 docker/agent/.env
 docker/data/
+docker/docker-compose.override.yml
 
 # 运行时数据
 data/news.db
