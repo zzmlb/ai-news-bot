@@ -16,7 +16,7 @@ WORKDIR /app
 
 # Python 依赖（先装依赖，利用 Docker 缓存）
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt chainlit
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 应用代码（build context 为仓库根目录）
 COPY . .

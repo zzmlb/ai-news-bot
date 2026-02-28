@@ -1,9 +1,12 @@
 # 千问模型配置
+# 获取 API Key: https://bailian.console.aliyun.com/ → API Key 管理
 qwen:
     api_key: "your-qwen-api-key"
     model: "qwen-turbo"
 
 # 推送渠道配置
+# 钉钉 Webhook: 钉钉群 → 群设置 → 机器人 → 自定义机器人 → 复制 Webhook 地址
+# keyword 必须与钉钉机器人安全设置中的"自定义关键词"一致
 webhook:
     dingtalk:
         enabled: true

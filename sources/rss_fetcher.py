@@ -1,8 +1,14 @@
 """RSS 源抓取模块"""
 
 import logging
+import socket
+import urllib.request
 import feedparser
 from datetime import datetime
+
+# 全局网络超时（秒），防止慢站点卡死整个抓取流程
+REQUEST_TIMEOUT = 15
+socket.setdefaulttimeout(REQUEST_TIMEOUT)
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +157,8 @@ def fetch_all() -> list[dict]:
                     "published_time": _parse_published(entry),
                 })
 
-            logger.info(f"  {feed_info['name']}: 获取 {len(feed.entries)} 条")
+            count = min(len(feed.entries), 20)
+            logger.info(f"  {feed_info['name']}: 获取 {count} 条")
         except Exception as e:
             logger.error(f"抓取 {feed_info['name']} 失败: {e}")
             continue
