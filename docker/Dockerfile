@@ -15,11 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Python 依赖（先装依赖，利用 Docker 缓存）
-COPY dev/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt chainlit
 
-# 应用代码
-COPY dev/ .
+# 应用代码（build context 为仓库根目录）
+COPY . .
 
 # 删除敏感文件和数据（运行时通过 volume 挂载）
 RUN rm -f config.yaml agent/.env \

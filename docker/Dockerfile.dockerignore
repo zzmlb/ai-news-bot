@@ -1,22 +1,18 @@
-# Git 目录
-dev/.git/
-prod/.git/
-
-# 生产目录（只需要 dev/ 代码）
-prod/
+# Git
+.git/
 
 # 敏感配置（运行时 volume 挂载）
-dev/config.yaml
-dev/agent/.env
+config.yaml
+agent/.env
 
 # 数据文件（运行时 volume 挂载）
-dev/data/
+data/
+
+# Docker 自身的运行时文件
+docker/data/
+docker/config.yaml
+docker/agent/.env
 
 # Python 缓存
 **/__pycache__/
 **/*.pyc
-
-# Docker 自身
-docker/data/
-docker/config.yaml
-docker/agent/.env
