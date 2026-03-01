@@ -68,6 +68,8 @@ def _truncate(text: str, max_len: int = 500) -> str:
 async def call_claude(prompt: str, reply: cl.Message):
     """调用 Claude Code CLI，解析 stream-json 事件流，展示思考过程"""
     system_prompt = _load_system_prompt()
+    dot_env = _load_env()
+    model = dot_env.get("ANTHROPIC_MODEL", "")
     cmd = [
         CLAUDE_CMD,
         "--print",
@@ -76,6 +78,8 @@ async def call_claude(prompt: str, reply: cl.Message):
         "--max-turns", "10",
         "--allowedTools", "Bash", "Read", "Glob", "Grep",
     ]
+    if model:
+        cmd.extend(["--model", model])
     if system_prompt:
         cmd.extend(["--system-prompt", system_prompt])
     cmd.append(prompt)
