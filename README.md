@@ -294,7 +294,8 @@ nohup chainlit run agent/app.py --host 0.0.0.0 --port 8000 > data/chainlit.log 2
 ```bash
 crontab -e
 # 添加以下行（注意替换为项目的绝对路径）：
-# 0 */3 * * * cd /root/ai-news-bot && python3 main.py >> data/cron.log 2>&1
+# 0 */3 * * * cd /path/to/ai-news-bot && python3 main.py >> data/cron.log 2>&1
+# 示例：0 */3 * * * cd /root/ai-news-bot && python3 main.py >> data/cron.log 2>&1
 ```
 
 验证 cron 是否生效：
