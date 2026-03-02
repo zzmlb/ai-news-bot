@@ -43,7 +43,7 @@ def main():
     if args.test:
         logger.info(">>> 测试模式：不会实际推送")
     if args.force:
-        logger.info(">>> 强制模式：忽略去重")
+        logger.info(">>> 强制模式：忽略去重和日期过滤")
 
     # 加载配置
     config = load_config()
@@ -62,19 +62,22 @@ def main():
         logger.info("未抓取到任何资讯，退出")
         return
 
-    # === 第1.5步：只保留今天的新闻 ===
-    today_str = datetime.now().strftime("%Y-%m-%d")
-    today_articles = []
-    for a in articles:
-        pt = a.get("published_time", "")
-        if pt.startswith(today_str):
-            today_articles.append(a)
-    logger.info(f"日期过滤: {len(articles)} 条 → {len(today_articles)} 条今日资讯（{today_str}）")
-    articles = today_articles
+    # === 第1.5步：只保留今天的新闻（--force 跳过） ===
+    if args.force:
+        logger.info("强制模式：跳过日期过滤")
+    else:
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        today_articles = []
+        for a in articles:
+            pt = a.get("published_time", "")
+            if pt.startswith(today_str):
+                today_articles.append(a)
+        logger.info(f"日期过滤: {len(articles)} 条 → {len(today_articles)} 条今日资讯（{today_str}）")
+        articles = today_articles
 
-    if not articles:
-        logger.info("今天没有新资讯，退出")
-        return
+        if not articles:
+            logger.info("今天没有新资讯，退出")
+            return
 
     # === 第2步：去重 ===
     logger.info("--- 第2步：去重过滤 ---")
