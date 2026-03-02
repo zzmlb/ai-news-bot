@@ -17,8 +17,9 @@ __pycache__/
 *.pyc
 
 # Chainlit
-agent/.chainlit/
-agent/.files/
+.chainlit/
+.files/
+chainlit.md
 
 # 编辑器临时文件
 *.swp
