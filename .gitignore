@@ -18,7 +18,6 @@ __pycache__/
 # Chainlit
 .chainlit/
 .files/
-chainlit.md
 
 # 编辑器临时文件
 *.swp

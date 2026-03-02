@@ -298,7 +298,13 @@ cp agent/.env.example agent/.env
 
 **启动：**
 
+> **重要**：必须在项目根目录下执行，Chainlit 从当前工作目录读取配置文件。
+
 ```bash
+# 确保在项目根目录下（包含 main.py 的目录）
+cd /path/to/ai-news-bot
+
+# 后台启动
 nohup chainlit run agent/app.py --host 0.0.0.0 --port 8000 > data/chainlit.log 2>&1 &
 
 # 访问 http://IP:8000

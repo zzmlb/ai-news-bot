@@ -106,20 +106,17 @@ def main():
         if a.get("summary_zh"):
             logger.info(f"     摘要: {a['summary_zh']}")
 
-    # === 第4步：推送 ===
+    # === 第4步：推送 + 入库 ===
     if args.test:
-        logger.info("--- 测试模式，跳过推送 ---")
+        logger.info("--- 测试模式，跳过推送，仅入库 ---")
     else:
         logger.info("--- 第4步：钉钉推送 ---")
         if dingtalk_cfg.get("enabled"):
             success = push(filtered, dingtalk_cfg["url"], dingtalk_cfg.get("keyword", "AInew"))
             if success:
-                # 推送成功后保存到数据库
-                for a in filtered:
-                    save_article(a)
-                logger.info("推送完成，已保存记录")
+                logger.info("推送完成")
             else:
-                logger.error("推送失败，未保存记录")
+                logger.error("推送失败")
         else:
             logger.info("钉钉推送未启用")
 
@@ -127,6 +124,11 @@ def main():
         s, f = push_to_all_subscribers(filtered)
         if s or f:
             logger.info(f"订阅者推送: {s} 成功, {f} 失败")
+
+    # 入库（test 模式也入库，方便验证页面数据）
+    for a in filtered:
+        save_article(a)
+    logger.info(f"已保存 {len(filtered)} 条记录到数据库")
 
     logger.info("AI 资讯推送系统运行结束")
     logger.info("=" * 50)
