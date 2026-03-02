@@ -55,9 +55,24 @@ def _load_system_prompt() -> str:
 
 async def call_claude(prompt: str, reply: cl.Message):
     """调用 Claude Code CLI，解析 stream-json 事件流"""
+    if not os.path.exists(ENV_FILE):
+        await reply.stream_token(
+            "**配置缺失**：未找到 `agent/.env` 文件。\n\n"
+            "请复制模板并填入 API Key：\n"
+            "```bash\ncp agent/.env.example agent/.env\n```"
+        )
+        return
+
     system_prompt = _load_system_prompt()
     dot_env = _load_env()
     model = dot_env.get("ANTHROPIC_MODEL", "")
+
+    if not dot_env.get("ANTHROPIC_AUTH_TOKEN"):
+        await reply.stream_token(
+            "**配置缺失**：`agent/.env` 中未设置 `ANTHROPIC_AUTH_TOKEN`。\n\n"
+            "请编辑 `agent/.env`，填入你的 API Key。"
+        )
+        return
     cmd = [
         CLAUDE_CMD,
         "--print",
