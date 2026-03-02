@@ -9,8 +9,7 @@ docker/data/
 docker/docker-compose.override.yml
 
 # 运行时数据
-data/news.db
-data/cron.log
+data/
 
 # Python
 __pycache__/
