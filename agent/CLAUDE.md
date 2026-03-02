@@ -81,7 +81,7 @@ crontab 每3小时执行一次 `python3 main.py`，日志追加到 `data/cron.lo
 
 ```bash
 # 手动测试（不推送）
-cd /root/pj221/work1/dev && python3 main.py --test
+python3 main.py --test
 # 测试+忽略去重
 python3 main.py --test --force
 # 最近日志
@@ -104,7 +104,7 @@ python3 -c "import sqlite3; c=sqlite3.connect('data/news.db'); [print(r) for r i
 
 ## 注意事项
 
-- 工作目录为 /root/pj221/work1/dev/
+- 工作目录为项目根目录（包含 main.py 的目录）
 - 不修改生产配置，除非用户明确要求
 - 查询数据库用只读操作
 - 回答简洁、专业
