@@ -17,7 +17,6 @@ echo -e "${CYAN}══════ AI News Bot 一键安装 ══════${
 # --- API Key（参数传入 或 交互输入） ---
 QWEN_KEY="${1:-}"
 if [ -z "$QWEN_KEY" ]; then
-    # 已有配置则复用
     if [ -f config.yaml ] && grep -q "sk-" config.yaml 2>/dev/null && ! grep -q "sk-xxx\|YOUR" config.yaml 2>/dev/null; then
         QWEN_KEY=$(grep "api_key" config.yaml | head -1 | sed 's/.*"\(sk-[^"]*\)".*/\1/')
         echo -e "${GREEN}复用已有 API Key${NC}"
@@ -82,11 +81,6 @@ ANTHROPIC_AUTH_TOKEN=${QWEN_KEY}
 ANTHROPIC_MODEL=qwen3-coder-plus
 EOF
 
-# --- 抓取资讯 ---
-echo -e "${YELLOW}抓取资讯...${NC}"
-python3 main.py --test --force 2>&1 | tail -3
-COUNT=$(python3 -c "import sqlite3; c=sqlite3.connect('data/news.db'); print(c.execute('SELECT COUNT(*) FROM articles').fetchone()[0])" 2>/dev/null || echo "0")
-
 # --- 启动服务 ---
 echo -e "${YELLOW}启动服务...${NC}"
 kill $(lsof -ti:5001) 2>/dev/null || true
@@ -115,5 +109,7 @@ echo ""
 echo -e "${GREEN}══════ 安装完成 ══════${NC}"
 echo -e "  资讯页面: ${CYAN}http://${IP}:5001${NC}"
 echo -e "  AI 助手:  ${CYAN}http://${IP}:8000${NC}"
-echo -e "  数据库:   ${GREEN}${COUNT} 条资讯${NC}"
+echo ""
+echo -e "  ${YELLOW}首次使用请手动抓取一次资讯:${NC}"
+echo -e "  ${CYAN}cd ${PROJECT_DIR} && python3 main.py --test --force${NC}"
 echo ""
