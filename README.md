@@ -89,6 +89,42 @@ ANTHROPIC_MODEL=qwen3-coder-plus
 
 </details>
 
+### 手动部署
+
+不想用一键脚本的话，按以下步骤操作：
+
+```bash
+git clone https://github.com/zzmlb/ai-news-bot.git
+cd ai-news-bot
+
+# 1. 装 Python 依赖
+pip install -r requirements.txt
+
+# 2. 配置（两个文件，填同一个千问 API Key）
+cp config.yaml.example config.yaml       # 编辑填入 api_key
+cp agent/.env.example agent/.env         # 编辑填入 ANTHROPIC_AUTH_TOKEN
+
+# 3. 装 Claude CLI（AI 助手需要，可选）
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+npm install -g @anthropic-ai/claude-code
+
+# 4. 创建数据目录
+mkdir -p data
+
+# 5. 启动资讯页面
+nohup python3 web/app.py > data/flask.log 2>&1 &
+
+# 6. 启动 AI 助手（必须在项目根目录执行）
+nohup chainlit run agent/app.py --host 0.0.0.0 --port 8000 > data/chainlit.log 2>&1 &
+
+# 7. 首次抓取
+python3 main.py --test --force
+
+# 8. 设置定时任务
+(crontab -l 2>/dev/null; echo "0 */3 * * * cd $(pwd) && python3 main.py >> data/cron.log 2>&1") | crontab -
+```
+
 ## 使用
 
 ### 抓取资讯

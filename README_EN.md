@@ -89,6 +89,42 @@ ANTHROPIC_MODEL=qwen3-coder-plus
 
 </details>
 
+### Manual Deployment
+
+If you prefer not to use the install script:
+
+```bash
+git clone https://github.com/zzmlb/ai-news-bot.git
+cd ai-news-bot
+
+# 1. Install Python dependencies
+pip install -r requirements.txt
+
+# 2. Configure (two files, same Qwen API Key)
+cp config.yaml.example config.yaml       # Edit: fill in api_key
+cp agent/.env.example agent/.env         # Edit: fill in ANTHROPIC_AUTH_TOKEN
+
+# 3. Install Claude CLI (required for AI assistant, optional)
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+npm install -g @anthropic-ai/claude-code
+
+# 4. Create data directory
+mkdir -p data
+
+# 5. Start news web page
+nohup python3 web/app.py > data/flask.log 2>&1 &
+
+# 6. Start AI assistant (must run from project root)
+nohup chainlit run agent/app.py --host 0.0.0.0 --port 8000 > data/chainlit.log 2>&1 &
+
+# 7. First fetch
+python3 main.py --test --force
+
+# 8. Setup cron job
+(crontab -l 2>/dev/null; echo "0 */3 * * * cd $(pwd) && python3 main.py >> data/cron.log 2>&1") | crontab -
+```
+
 ## Usage
 
 ### Fetch News
